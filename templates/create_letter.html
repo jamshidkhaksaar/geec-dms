@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Letter - GEEC Online DMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="bi bi-file-earmark-plus"></i> Create New Letter
+    </h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Create Letter</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-cloud-upload"></i> Upload PDF Letter
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('create_letter') }}" enctype="multipart/form-data" id="uploadForm">
+                    
+                    <!-- File Upload Area -->
+                    <div class="mb-4">
+                        <label for="letter_file" class="form-label">
+                            <i class="bi bi-file-earmark-pdf"></i> Select PDF File *
+                        </label>
+                        <div class="drop-zone" id="dropZone">
+                            <div class="drop-zone-content">
+                                <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
+                                <p class="lead mb-2">Drag and drop your PDF file here</p>
+                                <p class="text-muted mb-3">or</p>
+                                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('letter_file').click()">
+                                    <i class="bi bi-folder2-open"></i> Browse Files
+                                </button>
+                                <input type="file" class="form-control d-none" id="letter_file" name="letter_file" accept=".pdf" required>
+                            </div>
+                            <div class="drop-zone-preview d-none" id="filePreview">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-file-earmark-pdf text-danger fs-2 me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold" id="fileName"></div>
+                                        <div class="text-muted small" id="fileSize"></div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFile()">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> 
+                            Only PDF files are allowed. Maximum file size: 16MB
+                        </div>
+                    </div>
+
+                    <!-- Letter Title -->
+                    <div class="mb-4">
+                        <label for="letter_title" class="form-label">
+                            <i class="bi bi-pencil"></i> Letter Title (Optional)
+                        </label>
+                        <input type="text" class="form-control" id="letter_title" name="letter_title" 
+                               placeholder="Enter a descriptive title for this letter">
+                        <div class="form-text">
+                            This title will help you identify the letter later
+                        </div>
+                    </div>
+
+                    <!-- CEO Verification Option -->
+                    <div class="mb-4">
+                        <div class="card border-warning">
+                            <div class="card-body">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="require_verification" name="require_verification" checked>
+                                    <label class="form-check-label fw-bold" for="require_verification">
+                                        <i class="bi bi-shield-check"></i> Require CEO Verification
+                                    </label>
+                                </div>
+                                <div class="form-text mt-2">
+                                    <i class="bi bi-exclamation-triangle text-warning"></i>
+                                    When checked, this letter will be sent to the CEO for verification before it becomes publicly verifiable.
+                                    An email notification will be sent to the CEO with a direct verification link.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">
+                            <i class="bi bi-chat-text"></i> Additional Notes (Optional)
+                        </label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                  placeholder="Any additional information or context for this letter..."></textarea>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="row">
+                        <div class="col-sm-6 mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
+                                <i class="bi bi-upload"></i> Upload Letter
+                            </button>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-lg w-100">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-question-circle"></i> Need Help?
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>Upload Guidelines:</h6>
+                <ul class="mb-3">
+                    <li>Only PDF files are accepted</li>
+                    <li>Maximum file size is 16MB</li>
+                    <li>File names should be descriptive</li>
+                    <li>Ensure the PDF is not password protected</li>
+                </ul>
+                
+                <h6>Verification Process:</h6>
+                <ul class="mb-0">
+                    <li>Letters marked for CEO verification will be sent to the CEO via email</li>
+                    <li>The CEO can approve or reject the letter with optional comments</li>
+                    <li>Once verified, a unique QR code will be generated for public verification</li>
+                    <li>Third parties can scan the QR code to verify the letter's authenticity</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('letter_file');
+    const filePreview = document.getElementById('filePreview');
+    const dropContent = document.querySelector('.drop-zone-content');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('uploadForm');
+
+    // Drag and drop events
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+
+    function handleFile(file) {
+        if (file.type !== 'application/pdf') {
+            alert('Only PDF files are allowed!');
+            return;
+        }
+
+        if (file.size > 16 * 1024 * 1024) { // 16MB
+            alert('File size must be less than 16MB!');
+            return;
+        }
+
+        // Update file input
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+
+        // Show preview
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        
+        dropContent.classList.add('d-none');
+        filePreview.classList.remove('d-none');
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    window.clearFile = function() {
+        fileInput.value = '';
+        dropContent.classList.remove('d-none');
+        filePreview.classList.add('d-none');
+    };
+
+    // Form submission with loading state
+    form.addEventListener('submit', function(e) {
+        if (!fileInput.files.length) {
+            e.preventDefault();
+            alert('Please select a PDF file to upload.');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Uploading...';
+    });
+});
+</script>
+
+<style>
+.drop-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 0.5rem;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.drop-zone.drag-over {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.drop-zone:hover {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.02);
+}
+
+.border-left-success {
+    border-left: 4px solid #28a745 !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid #ffc107 !important;
+}
+
+.border-left-danger {
+    border-left: 4px solid #dc3545 !important;
+}
+
+.border-left-info {
+    border-left: 4px solid #17a2b8 !important;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - GEEC Online DMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="bi bi-gear"></i> System Settings
+    </h1>
+</div>
+
+<div class="row">
+    <!-- Company Branding -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-building"></i> Company Branding
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('update_settings') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="company_name" class="form-label">Company Name</label>
+                        <input type="text" class="form-control" id="company_name" name="company_name" 
+                               value="{{ settings.company_name or 'GEEC' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="company_logo" class="form-label">Company Logo</label>
+                        <input type="file" class="form-control" id="company_logo" name="company_logo" accept="image/*">
+                        <div class="form-text">Upload PNG, JPG, or SVG. Maximum size: 2MB</div>
+                        {% if settings.company_logo %}
+                        <div class="mt-2">
+                            <img src="{{ settings.company_logo }}" alt="Current Logo" class="img-thumbnail" style="max-height: 80px;">
+                            <small class="text-muted d-block">Current logo</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check"></i> Update Branding
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Configuration -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-envelope"></i> Email Configuration
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('update_settings') }}">
+                    <div class="mb-3">
+                        <label for="ceo_email" class="form-label">CEO Email Address</label>
+                        <input type="email" class="form-control" id="ceo_email" name="ceo_email" 
+                               value="{{ settings.ceo_email or '' }}">
+                        <div class="form-text">Email address for CEO verification notifications</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="admin_email" class="form-label">Admin Email Address</label>
+                        <input type="email" class="form-control" id="admin_email" name="admin_email" 
+                               value="{{ settings.admin_email or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sendgrid_api_key" class="form-label">SendGrid API Key</label>
+                        <input type="password" class="form-control" id="sendgrid_api_key" name="sendgrid_api_key" 
+                               placeholder="Enter your SendGrid API key">
+                        <div class="form-text">Required for sending email notifications</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-info">
+                        <i class="bi bi-check"></i> Update Email Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- System Configuration -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-sliders"></i> System Configuration
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('update_settings') }}">
+                    <div class="mb-3">
+                        <label for="max_file_size" class="form-label">Maximum File Size (MB)</label>
+                        <input type="number" class="form-control" id="max_file_size" name="max_file_size" 
+                               value="{{ (settings.max_file_size|int / 1048576)|round|int if settings.max_file_size else 16 }}" 
+                               min="1" max="100">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Allowed File Types</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="allow_pdf" name="file_types" value="pdf" checked>
+                            <label class="form-check-label" for="allow_pdf">PDF Files</label>
+                        </div>
+                        <div class="form-text">Currently only PDF files are supported</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="session_timeout" class="form-label">Session Timeout (minutes)</label>
+                        <input type="number" class="form-control" id="session_timeout" name="session_timeout" 
+                               value="30" min="10" max="480">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check"></i> Update System Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-shield-lock"></i> Security Settings
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>Password Requirements</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check text-success"></i> Minimum 8 characters</li>
+                        <li><i class="bi bi-check text-success"></i> Password hashing enabled</li>
+                        <li><i class="bi bi-check text-success"></i> Session management active</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>File Upload Security</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check text-success"></i> File type validation</li>
+                        <li><i class="bi bi-check text-success"></i> File size limits</li>
+                        <li><i class="bi bi-check text-success"></i> Secure file storage</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Production Security:</strong>
+                    Ensure you have updated the SECRET_KEY and enabled HTTPS in production.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Information -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> System Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Application Details</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Version:</strong></td>
+                                <td>1.0.0</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Framework:</strong></td>
+                                <td>Flask {{ flask_version if flask_version else 'Unknown' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Database:</strong></td>
+                                <td>MySQL</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Upload Directory:</strong></td>
+                                <td>uploads/</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Server Environment</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Python Version:</strong></td>
+                                <td>{{ python_version if python_version else 'Unknown' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Server Time:</strong></td>
+                                <td><span id="server-time"></span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Debug Mode:</strong></td>
+                                <td>
+                                    {% if debug_mode %}
+                                        <span class="badge bg-warning">Enabled</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Disabled</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Letters:</strong></td>
+                                <td>{{ total_letters if total_letters else 0 }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-lightning"></i> Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-primary w-100" onclick="testEmailConnection()">
+                            <i class="bi bi-envelope-check"></i> Test Email
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-info w-100" onclick="clearCache()">
+                            <i class="bi bi-arrow-clockwise"></i> Clear Cache
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-warning w-100" onclick="exportSettings()">
+                            <i class="bi bi-download"></i> Export Settings
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Update server time
+function updateServerTime() {
+    const now = new Date();
+    document.getElementById('server-time').textContent = now.toLocaleString();
+}
+
+updateServerTime();
+setInterval(updateServerTime, 1000);
+
+// Test email connection
+function testEmailConnection() {
+    fetch('/api/test-email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Email test successful!');
+        } else {
+            alert('Email test failed: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error testing email: ' + error);
+    });
+}
+
+// Clear cache
+function clearCache() {
+    if (confirm('Are you sure you want to clear the application cache?')) {
+        fetch('/api/clear-cache', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Cache cleared successfully!');
+                location.reload();
+            } else {
+                alert('Error clearing cache: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error clearing cache: ' + error);
+        });
+    }
+}
+
+// Export settings
+function exportSettings() {
+    const settings = {
+        company_name: document.getElementById('company_name').value,
+        ceo_email: document.getElementById('ceo_email').value,
+        admin_email: document.getElementById('admin_email').value,
+        max_file_size: document.getElementById('max_file_size').value,
+        session_timeout: document.getElementById('session_timeout').value,
+        exported_at: new Date().toISOString()
+    };
+    
+    const dataStr = JSON.stringify(settings, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = 'geec_dms_settings.json';
+    link.click();
+}
+
+// Form validation
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const fileInput = form.querySelector('input[type="file"]');
+            if (fileInput && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if (file.size > 2 * 1024 * 1024) { // 2MB
+                    e.preventDefault();
+                    alert('Logo file size must be less than 2MB.');
+                    return false;
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

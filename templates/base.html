@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GEEC Online DMS{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- No top navigation - using sidebar only -->
+
+    <!-- Mobile Toggle Button -->
+    {% if session.user_id %}
+    <button class="btn btn-primary sidebar-toggle d-md-none" type="button" id="sidebarToggle">
+        <i class="bi bi-list"></i>
+    </button>
+    {% endif %}
+
+    <!-- Sidebar Overlay for Mobile -->
+    {% if session.user_id %}
+    <div class="sidebar-overlay d-md-none" id="sidebarOverlay"></div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="{% if session.user_id %}container-fluid{% else %}d-flex align-items-center min-vh-100{% endif %}">
+        {% if session.user_id %}
+        <div class="row min-vh-100">
+            <!-- Sidebar (only show if logged in) -->
+            <div class="col-md-3 col-lg-2 sidebar-container" id="sidebar">
+                <div class="sidebar-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="sidebar-brand d-flex align-items-center text-decoration-none">
+                            {% if company_info and company_info.logo %}
+                                <img src="{{ company_info.logo }}" alt="Logo" height="40" class="me-2">
+                            {% endif %}
+                            <span class="fw-bold">{{ company_info.name if company_info else 'GEEC' }} DMS</span>
+                        </a>
+                        <!-- Close button for mobile only -->
+                        <button class="btn btn-sm btn-outline-light d-md-none" id="sidebarClose">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="sidebar-nav">
+                    <div class="list-group list-group-flush">
+                        <a href="{{ url_for('dashboard') }}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                        <a href="{{ url_for('create_letter') }}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-file-earmark-plus"></i> Create New Letter
+                        </a>
+                        <a href="{{ url_for('letter_status') }}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-file-earmark-text"></i> Letter Status
+                        </a>
+                        {% if session.role == 'Admin' %}
+                        <a href="{{ url_for('user_management') }}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-people"></i> User Management
+                        </a>
+                        <a href="{{ url_for('settings') }}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-gear"></i> Settings
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="sidebar-footer">
+                    <div class="user-info">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-circle fs-4 me-2"></i>
+                            <div>
+                                <div class="fw-bold">{{ session.full_name }}</div>
+                                <small class="text-muted">{{ session.role }}</small>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm mt-2 w-100">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content Area -->
+            <div class="col-md-9 col-lg-10 main-content">
+        {% else %}
+            <div class="container">
+        {% endif %}
+                
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Page Content -->
+                {% block content %}{% endblock %}
+                
+        {% if session.user_id %}
+            </div>
+        </div>
+        {% else %}
+            </div>
+        {% endif %}
+    </main>
+
+    <!-- Footer (only show on login page) -->
+    {% if not session.user_id %}
+    <footer class="login-footer">
+        <div class="container">
+            <div class="row align-items-center justify-content-center">
+                <div class="col-lg-8">
+                    <div class="footer-content">
+                        <div class="row align-items-center">
+                            <div class="col-md-8 text-md-start text-center mb-3 mb-md-0">
+                                <div class="copyright-text">
+                                    <p class="mb-1">&copy; 2025 All rights reserved by</p>
+                                    <h5 class="mb-0 fw-bold text-primary">Jamshid Khaksaar</h5>
+                                    <small class="text-muted">Full Stack Developer</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-md-end text-center">
+                                <div class="social-links">
+                                    <p class="mb-2 small text-muted">Connect with me</p>
+                                    <div class="d-flex justify-content-md-end justify-content-center gap-3">
+                                        <a href="https://linkedin.com/in/jamshidkhaksaar" target="_blank" class="social-link linkedin" title="LinkedIn Profile">
+                                            <i class="bi bi-linkedin"></i>
+                                        </a>
+                                        <a href="https://www.github.com/jamshidkhaksaar" target="_blank" class="social-link github" title="GitHub Profile">
+                                            <i class="bi bi-github"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endif %}
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js for dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Sidebar Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarClose = document.getElementById('sidebarClose');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const body = document.body;
+
+            // Show sidebar (mobile)
+            function showSidebar() {
+                sidebar.classList.add('show');
+                sidebarOverlay.classList.add('show');
+                body.classList.add('sidebar-open');
+            }
+
+            // Hide sidebar (mobile)
+            function hideSidebar() {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+                body.classList.remove('sidebar-open');
+            }
+
+            // Event listeners
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', showSidebar);
+            }
+
+            if (sidebarClose) {
+                sidebarClose.addEventListener('click', hideSidebar);
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', hideSidebar);
+            }
+
+            // Close sidebar when clicking on menu items (mobile)
+            const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 769) {
+                        setTimeout(hideSidebar, 300); // Small delay for better UX
+                    }
+                });
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 769) {
+                    hideSidebar(); // Hide mobile sidebar when resizing to desktop
+                }
+            });
+        });
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html> 

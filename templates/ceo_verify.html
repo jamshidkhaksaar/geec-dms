@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}CEO Verification - GEEC Online DMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="bi bi-shield-check"></i> Letter Verification
+    </h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('letter_status') }}">Letters</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Verify</li>
+        </ol>
+    </nav>
+</div>
+
+{% if letter %}
+<div class="row">
+    <!-- Letter Information Card -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-file-earmark-text"></i> Letter Awaiting Verification
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-hash"></i> Letter Number:</h6>
+                        <p class="text-primary fw-bold fs-5">{{ letter.letter_number }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-calendar3"></i> Upload Date:</h6>
+                        <p>{{ letter.upload_date.strftime('%B %d, %Y at %I:%M %p') if letter.upload_date else 'N/A' }}</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-person"></i> Uploaded By:</h6>
+                        <p>{{ letter.uploaded_by_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-file-pdf"></i> Original Filename:</h6>
+                        <p class="text-break">{{ letter.original_filename }}</p>
+                    </div>
+                </div>
+
+                <!-- PDF Viewer (placeholder - in production you'd implement secure PDF viewing) -->
+                <div class="card border-info mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-eye"></i> Document Preview
+                        </h6>
+                    </div>
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-file-earmark-pdf display-1 text-danger mb-3"></i>
+                        <h5>PDF Document Ready for Review</h5>
+                        <p class="text-muted">
+                            In a production environment, this would show a secure PDF viewer<br>
+                            or provide a secure download link for the CEO to review the document.
+                        </p>
+                        <button class="btn btn-outline-primary" onclick="alert('PDF viewer would be implemented here')">
+                            <i class="bi bi-download"></i> Download PDF for Review
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Actions Card -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-clipboard-check"></i> Verification Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                
+                <!-- Approve Form -->
+                <div class="mb-4">
+                    <form method="POST" action="{{ url_for('approve_letter', letter_number=letter.letter_number) }}" 
+                          onsubmit="return confirmAction('approve')">
+                        <div class="mb-3">
+                            <label for="approve_comments" class="form-label">
+                                <i class="bi bi-chat-text"></i> Approval Comments (Optional)
+                            </label>
+                            <textarea class="form-control" id="approve_comments" name="comments" rows="3" 
+                                      placeholder="Add any comments or notes about this approval..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 btn-lg">
+                            <i class="bi bi-check-circle"></i> Approve Letter
+                        </button>
+                    </form>
+                </div>
+
+                <div class="text-center mb-3">
+                    <div class="border-top pt-3">
+                        <small class="text-muted">OR</small>
+                    </div>
+                </div>
+
+                <!-- Reject Form -->
+                <div class="mb-4">
+                    <form method="POST" action="{{ url_for('reject_letter', letter_number=letter.letter_number) }}" 
+                          onsubmit="return confirmAction('reject')">
+                        <div class="mb-3">
+                            <label for="reject_comments" class="form-label">
+                                <i class="bi bi-chat-text"></i> Rejection Reason
+                            </label>
+                            <textarea class="form-control" id="reject_comments" name="comments" rows="3" 
+                                      placeholder="Please provide a reason for rejection..." required></textarea>
+                            <div class="form-text">
+                                <i class="bi bi-exclamation-triangle text-warning"></i>
+                                Rejection reason is required and will be sent to the uploader.
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100 btn-lg">
+                            <i class="bi bi-x-circle"></i> Reject Letter
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('letter_status') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Letters
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats Card -->
+        <div class="card shadow mt-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-graph-up"></i> Your Verification Stats
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h4 text-success mb-0">{{ session.get('verified_count', 0) }}</div>
+                        <small class="text-muted">Approved</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-danger mb-0">{{ session.get('rejected_count', 0) }}</div>
+                        <small class="text-muted">Rejected</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Verification Guidelines -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Verification Guidelines
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Before Approving:</h6>
+                        <ul class="mb-0">
+                            <li>Verify the document authenticity</li>
+                            <li>Check for proper formatting and content</li>
+                            <li>Ensure all required signatures/stamps are present</li>
+                            <li>Confirm the document is complete and legible</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Common Rejection Reasons:</h6>
+                        <ul class="mb-0">
+                            <li>Incomplete or missing information</li>
+                            <li>Poor document quality or illegible text</li>
+                            <li>Missing required signatures or stamps</li>
+                            <li>Incorrect document format or type</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-exclamation-triangle display-1 text-warning"></i>
+                <h4 class="mt-3">Letter Not Found</h4>
+                <p class="text-muted">The requested letter could not be found or you don't have permission to verify it.</p>
+                <a href="{{ url_for('letter_status') }}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i> Back to Letters
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function confirmAction(action) {
+    const actionText = action === 'approve' ? 'approve' : 'reject';
+    const message = `Are you sure you want to ${actionText} this letter?\n\nThis action cannot be undone.`;
+    
+    if (confirm(message)) {
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+        
+        // Allow form submission
+        return true;
+    }
+    
+    return false;
+}
+
+// Auto-resize textareas
+document.addEventListener('DOMContentLoaded', function() {
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    });
+
+    // Add focus enhancement to forms
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        const inputs = form.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+    });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl+Enter to approve
+    if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        const approveForm = document.querySelector('form[action*="approve"]');
+        if (approveForm && confirm('Approve this letter? (Ctrl+Enter)')) {
+            approveForm.submit();
+        }
+    }
+    
+    // Esc to go back
+    if (e.key === 'Escape') {
+        window.location.href = '{{ url_for("letter_status") }}';
+    }
+});
+</script>
+
+<style>
+.focused {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-radius: 0.375rem;
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    .btn-lg {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %} 

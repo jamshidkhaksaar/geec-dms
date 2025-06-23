@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letter Verification - GEEC Online DMS</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .verification-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .status-verified {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .status-pending {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .status-rejected {
+            background: linear-gradient(45deg, #dc3545, #e83e8c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container d-flex align-items-center justify-content-center min-vh-100">
+        <div class="row justify-content-center w-100">
+            <div class="col-md-8 col-lg-6">
+                
+                <!-- Header -->
+                <div class="text-center text-white mb-4">
+                    {% if company_info and company_info.logo %}
+                        <div class="mb-3">
+                            <img src="{{ company_info.logo }}" alt="{{ company_info.name }} Logo" 
+                                 class="img-fluid" style="max-height: 80px;">
+                        </div>
+                    {% endif %}
+                    <h1 class="display-4 fw-bold">
+                        <i class="bi bi-shield-check"></i> Letter Verification
+                    </h1>
+                    <p class="lead">{{ company_info.name if company_info else 'GEEC' }} Online Document Management System</p>
+                </div>
+
+                <!-- Verification Result Card -->
+                <div class="verification-card p-5 text-center">
+                    {% if letter %}
+                        {% if letter.status == 'Verified' %}
+                        <!-- Verified Letter -->
+                        <div class="mb-4">
+                            <i class="bi bi-check-circle-fill display-1 text-success pulse"></i>
+                        </div>
+                        <h2 class="status-verified fw-bold mb-4">VERIFIED LETTER</h2>
+                        <div class="alert alert-success" role="alert">
+                            <i class="bi bi-shield-check-fill"></i>
+                            <strong>This letter has been officially verified and approved.</strong>
+                        </div>
+                        
+                        {% elif letter.status == 'Pending' %}
+                        <!-- Pending Letter -->
+                        <div class="mb-4">
+                            <i class="bi bi-clock-fill display-1 text-warning pulse"></i>
+                        </div>
+                        <h2 class="status-pending fw-bold mb-4">VERIFICATION PENDING</h2>
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <strong>This letter is awaiting verification.</strong>
+                        </div>
+                        
+                        {% else %}
+                        <!-- Rejected Letter -->
+                        <div class="mb-4">
+                            <i class="bi bi-x-circle-fill display-1 text-danger pulse"></i>
+                        </div>
+                        <h2 class="status-rejected fw-bold mb-4">VERIFICATION REJECTED</h2>
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-x-octagon-fill"></i>
+                            <strong>This letter has been rejected during verification.</strong>
+                        </div>
+                        {% endif %}
+
+                        <!-- Letter Details -->
+                        <div class="card mt-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-info-circle"></i> Letter Information
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-start">
+                                    <div class="col-sm-4 fw-bold">Letter Number:</div>
+                                    <div class="col-sm-8">
+                                        <code class="fs-6">{{ letter.letter_number }}</code>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row text-start">
+                                    <div class="col-sm-4 fw-bold">Uploaded By:</div>
+                                    <div class="col-sm-8">{{ letter.uploaded_by_name }}</div>
+                                </div>
+                                <hr>
+                                <div class="row text-start">
+                                    <div class="col-sm-4 fw-bold">Upload Date:</div>
+                                    <div class="col-sm-8">
+                                        {{ letter.upload_date.strftime('%B %d, %Y at %I:%M %p') if letter.upload_date else 'N/A' }}
+                                    </div>
+                                </div>
+                                {% if letter.verified_by_name %}
+                                <hr>
+                                <div class="row text-start">
+                                    <div class="col-sm-4 fw-bold">Verified By:</div>
+                                    <div class="col-sm-8">{{ letter.verified_by_name }}</div>
+                                </div>
+                                {% endif %}
+                                {% if letter.verified_date %}
+                                <hr>
+                                <div class="row text-start">
+                                    <div class="col-sm-4 fw-bold">Verified Date:</div>
+                                    <div class="col-sm-8">
+                                        {{ letter.verified_date.strftime('%B %d, %Y at %I:%M %p') }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Security Notice -->
+                        <div class="card mt-4 border-info">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="bi bi-shield-lock text-info"></i> Security Notice
+                                </h6>
+                                <p class="card-text small text-muted mb-0">
+                                    This verification page only displays the status and metadata of the letter. 
+                                    The actual content of the letter is not accessible through this public interface 
+                                    and remains secure within the GEEC Document Management System.
+                                </p>
+                            </div>
+                        </div>
+
+                    {% else %}
+                        <!-- Letter Not Found -->
+                        <div class="mb-4">
+                            <i class="bi bi-question-circle-fill display-1 text-secondary"></i>
+                        </div>
+                        <h2 class="text-secondary fw-bold mb-4">LETTER NOT FOUND</h2>
+                        <div class="alert alert-secondary" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>No letter found with this verification code.</strong>
+                        </div>
+                        <p class="text-muted">
+                            Please check the letter number or QR code and try again. 
+                            If you believe this is an error, please contact the issuing organization.
+                        </p>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="mt-4">
+                        <button class="btn btn-outline-primary me-2" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Print Verification
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="window.location.reload()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center text-white mt-4">
+                    <p class="mb-0">
+                        <small>
+                            Powered by {{ company_info.name if company_info else 'GEEC' }} Online Document Management System<br>
+                            <i class="bi bi-shield-check"></i> Secure • Reliable • Trusted
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Verification Input -->
+    <div class="position-fixed bottom-0 start-0 p-3">
+        <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#manualVerifyModal">
+            <i class="bi bi-search"></i> Verify Another Letter
+        </button>
+    </div>
+
+    <!-- Manual Verification Modal -->
+    <div class="modal fade" id="manualVerifyModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-search"></i> Verify Letter Manually
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="manualVerifyForm">
+                        <div class="mb-3">
+                            <label for="letterNumber" class="form-label">Enter Letter Number</label>
+                            <input type="text" class="form-control" id="letterNumber" 
+                                   placeholder="e.g., ABC123DEF456" required>
+                            <div class="form-text">
+                                Enter the unique letter number to verify its status
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="verifyManually()">
+                        <i class="bi bi-search"></i> Verify
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function verifyManually() {
+            const letterNumber = document.getElementById('letterNumber').value.trim();
+            if (letterNumber) {
+                window.location.href = '/verify/' + letterNumber;
+            } else {
+                alert('Please enter a valid letter number.');
+            }
+        }
+
+        // Handle Enter key in manual verification form
+        document.getElementById('letterNumber').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                verifyManually();
+            }
+        });
+
+        // Add some animation to cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.verification-card, .card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html> 

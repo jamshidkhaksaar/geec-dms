@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Login - GEEC Online DMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white text-center py-4">
+                {% if company_info and company_info.logo %}
+                    <div class="mb-3">
+                        <img src="{{ company_info.logo }}" alt="{{ company_info.name }} Logo" 
+                             class="img-fluid" style="max-height: 60px;">
+                    </div>
+                {% endif %}
+                <h3 class="mb-0">
+                    <i class="bi bi-shield-lock"></i> 
+                    {{ company_info.name if company_info else 'GEEC' }} DMS Login
+                </h3>
+            </div>
+            <div class="card-body p-5">
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="mb-4">
+                        <label for="username" class="form-label">
+                            <i class="bi bi-person"></i> Username
+                        </label>
+                        <input type="text" class="form-control form-control-lg" id="username" name="username" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label">
+                            <i class="bi bi-lock"></i> Password
+                        </label>
+                        <input type="password" class="form-control form-control-lg" id="password" name="password" required>
+                    </div>
+                    
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </button>
+                    </div>
+                </form>
+                
+                <hr>
+                
+                <div class="text-center">
+                    <small class="text-muted">
+                        <strong>Default Login Credentials:</strong><br>
+                        Admin: admin / admin123<br>
+                        CEO: ceo / ceo123<br>
+                        User: user / user123
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Information Card -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> System Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><strong>Document Management System</strong></p>
+                <p class="text-muted small mb-0">
+                    Secure letter upload, verification, and status tracking system.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus on username field
+    document.getElementById('username').focus();
+    
+    // Add some animation to the login form
+    const card = document.querySelector('.card');
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(-20px)';
+    
+    setTimeout(() => {
+        card.style.transition = 'all 0.5s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+    }, 100);
+});
+</script>
+{% endblock %} 

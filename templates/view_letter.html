@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}View Letter - {{ letter.letter_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="bi bi-file-earmark-text"></i> 
+                    Letter Details
+                </h2>
+                <div class="btn-group">
+                    <a href="{{ url_for('download_letter', letter_number=letter.letter_number) }}" 
+                       class="btn btn-primary">
+                        <i class="bi bi-download"></i> Download PDF
+                    </a>
+                    <a href="{{ url_for('letter_status') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Letters
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Letter Information -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Letter Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Letter Number:</th>
+                                    <td><strong>{{ letter.letter_number }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Original Filename:</th>
+                                    <td>{{ letter.original_filename }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Uploaded By:</th>
+                                    <td>{{ letter.uploaded_by_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Upload Date:</th>
+                                    <td>{{ letter.upload_date.strftime('%Y-%m-%d %H:%M:%S') if letter.upload_date else 'N/A' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Status:</th>
+                                    <td>
+                                        {% if letter.status == 'Verified' %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Verified
+                                            </span>
+                                        {% elif letter.status == 'Pending' %}
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-clock"></i> Pending
+                                            </span>
+                                        {% elif letter.status == 'Rejected' %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Rejected
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ letter.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Verified By:</th>
+                                    <td>{{ letter.verified_by_name or 'Not verified' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Verified Date:</th>
+                                    <td>{{ letter.verified_date.strftime('%Y-%m-%d %H:%M:%S') if letter.verified_date else 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>CEO Verification:</th>
+                                    <td>
+                                        {% if letter.require_ceo_verification %}
+                                            <span class="badge bg-info">Required</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Not Required</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Code and Actions -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-qr-code"></i> QR Code
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if letter.qr_code %}
+                        <img src="data:image/png;base64,{{ letter.qr_code }}" 
+                             alt="QR Code" class="img-fluid mb-3" style="max-width: 200px;">
+                        <p class="text-muted small">
+                            Scan this QR code to verify the letter
+                        </p>
+                    {% else %}
+                        <p class="text-muted">No QR code available</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card shadow mt-3">
+                <div class="card-header bg-warning text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-gear"></i> Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('verify_letter', letter_number=letter.letter_number) }}" 
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-shield-check"></i> Public Verification
+                        </a>
+                        
+                        {% if session.role in ['CEO', 'Admin'] and letter.status == 'Pending' %}
+                            <a href="{{ url_for('ceo_verify', letter_number=letter.letter_number) }}" 
+                               class="btn btn-outline-success">
+                                <i class="bi bi-check-circle"></i> CEO Verify
+                            </a>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-info" onclick="copyVerificationLink()">
+                            <i class="bi bi-link"></i> Copy Verification Link
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments Section -->
+    {% if letter.verification_comments %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-text"></i> Verification Comments
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Comments:</strong> {{ letter.verification_comments }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function copyVerificationLink() {
+    const verificationUrl = "{{ request.url_root }}verify/{{ letter.letter_number }}";
+    
+    // Create temporary input element
+    const tempInput = document.createElement('input');
+    tempInput.value = verificationUrl;
+    document.body.appendChild(tempInput);
+    
+    // Select and copy
+    tempInput.select();
+    document.execCommand('copy');
+    
+    // Remove temporary element
+    document.body.removeChild(tempInput);
+    
+    // Show success message
+    alert('Verification link copied to clipboard!\n\n' + verificationUrl);
+}
+</script>
+{% endblock %} 

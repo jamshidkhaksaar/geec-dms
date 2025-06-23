@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}Letter Status - GEEC Online DMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="bi bi-file-earmark-text"></i> Letter Status
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="filterStatus('all')">
+                All
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-success" onclick="filterStatus('Verified')">
+                Verified
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-warning" onclick="filterStatus('Pending')">
+                Pending
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="filterStatus('Rejected')">
+                Rejected
+            </button>
+        </div>
+        <a href="{{ url_for('create_letter') }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle"></i> New Letter
+        </a>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text" class="form-control" id="searchInput" placeholder="Search letters...">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <div class="btn-group" role="group">
+                <input type="radio" class="btn-check" name="viewMode" id="tableView" autocomplete="off" checked>
+                <label class="btn btn-outline-secondary" for="tableView">
+                    <i class="bi bi-table"></i> Table
+                </label>
+                <input type="radio" class="btn-check" name="viewMode" id="cardView" autocomplete="off">
+                <label class="btn btn-outline-secondary" for="cardView">
+                    <i class="bi bi-grid-3x3-gap"></i> Cards
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Letters Table View -->
+<div id="tableViewContainer">
+    <div class="card shadow">
+        <div class="card-body">
+            {% if letters %}
+            <div class="table-responsive">
+                <table class="table table-hover" id="lettersTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Letter Number</th>
+                            <th>Original Filename</th>
+                            <th>Uploaded By</th>
+                            <th>Upload Date</th>
+                            <th>Status</th>
+                            <th>Verified By</th>
+                            <th>Verified Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for letter in letters %}
+                        <tr data-status="{{ letter.status }}">
+                            <td>
+                                <a href="{{ url_for('view_letter', letter_number=letter.letter_number) }}" 
+                                   class="text-decoration-none" title="Click to view letter details">
+                                    <strong class="text-primary">{{ letter.letter_number }}</strong>
+                                </a>
+                            </td>
+                            <td>
+                                <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                {{ letter.original_filename }}
+                            </td>
+                            <td>{{ letter.uploaded_by_name }}</td>
+                            <td>{{ letter.upload_date.strftime('%Y-%m-%d %H:%M') if letter.upload_date else 'N/A' }}</td>
+                            <td>
+                                {% if letter.status == 'Verified' %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle"></i> Verified
+                                    </span>
+                                {% elif letter.status == 'Pending' %}
+                                    <span class="badge bg-warning">
+                                        <i class="bi bi-clock"></i> Pending
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-x-circle"></i> Rejected
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ letter.verified_by_name if letter.verified_by_name else 'N/A' }}</td>
+                            <td>{{ letter.verified_date.strftime('%Y-%m-%d %H:%M') if letter.verified_date else 'N/A' }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('view_letter', letter_number=letter.letter_number) }}" 
+                                       class="btn btn-sm btn-outline-primary" title="View Letter Details">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-info" 
+                                            onclick="showQRCode('{{ letter.letter_number }}', '{{ letter.qr_code }}')">
+                                        <i class="bi bi-qr-code"></i>
+                                    </button>
+                                    <a href="{{ url_for('verify_letter', letter_number=letter.letter_number) }}" 
+                                       class="btn btn-sm btn-outline-secondary" target="_blank" title="Public Verification">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if session.role in ['CEO', 'Admin'] and letter.status == 'Pending' %}
+                                    <a href="{{ url_for('ceo_verify', letter_number=letter.letter_number) }}" 
+                                       class="btn btn-sm btn-outline-success" title="CEO Verification">
+                                        <i class="bi bi-shield-check"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if session.role == 'Admin' %}
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            onclick="confirmDelete('{{ letter.letter_number }}', '{{ letter.original_filename }}')" 
+                                            title="Delete Letter (Admin Only)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <h4 class="mt-3">No Letters Found</h4>
+                <p class="text-muted">No letters have been uploaded yet.</p>
+                <a href="{{ url_for('create_letter') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Upload Your First Letter
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Letters Card View -->
+<div id="cardViewContainer" class="d-none">
+    <div class="row" id="lettersCards">
+        {% for letter in letters %}
+        <div class="col-md-6 col-lg-4 mb-4" data-status="{{ letter.status }}">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('view_letter', letter_number=letter.letter_number) }}" 
+                       class="text-decoration-none" title="Click to view letter details">
+                        <strong class="text-primary">{{ letter.letter_number }}</strong>
+                    </a>
+                    {% if letter.status == 'Verified' %}
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle"></i> Verified
+                        </span>
+                    {% elif letter.status == 'Pending' %}
+                        <span class="badge bg-warning">
+                            <i class="bi bi-clock"></i> Pending
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger">
+                            <i class="bi bi-x-circle"></i> Rejected
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-file-earmark-pdf text-danger"></i>
+                        {{ letter.original_filename }}
+                    </h6>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <strong>Uploaded by:</strong> {{ letter.uploaded_by_name }}<br>
+                            <strong>Date:</strong> {{ letter.upload_date.strftime('%Y-%m-%d') if letter.upload_date else 'N/A' }}<br>
+                            {% if letter.verified_by_name %}
+                            <strong>Verified by:</strong> {{ letter.verified_by_name }}<br>
+                            {% endif %}
+                        </small>
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="btn-group w-100" role="group">
+                                <a href="{{ url_for('view_letter', letter_number=letter.letter_number) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-file-earmark-text"></i> Details
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-info" 
+                                        onclick="showQRCode('{{ letter.letter_number }}', '{{ letter.qr_code }}')">
+                                    <i class="bi bi-qr-code"></i> QR
+                                </button>
+                                {% if session.role in ['CEO', 'Admin'] and letter.status == 'Pending' %}
+                                <a href="{{ url_for('ceo_verify', letter_number=letter.letter_number) }}" 
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-shield-check"></i> Verify
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if session.role == 'Admin' %}
+                        <div class="col-12 mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-danger w-100" 
+                                    onclick="confirmDelete('{{ letter.letter_number }}', '{{ letter.original_filename }}')">
+                                <i class="bi bi-trash"></i> Delete Letter (Admin Only)
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-qr-code"></i> Letter QR Code
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="qrCodeContainer"></div>
+                <p class="mt-3">
+                    <strong>Letter Number:</strong> <span id="modalLetterNumber"></span>
+                </p>
+                <p class="text-muted small">
+                    Scan this QR code to verify the letter's authenticity
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="downloadQR()">
+                    <i class="bi bi-download"></i> Download QR Code
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle"></i> Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This action cannot be undone!
+                </div>
+                <p>Are you sure you want to delete this letter?</p>
+                <div class="bg-light p-3 rounded">
+                    <strong>Letter Number:</strong> <span id="deleteLetterNumber"></span><br>
+                    <strong>Filename:</strong> <span id="deleteFileName"></span>
+                </div>
+                <p class="text-muted mt-3 small">
+                    This will permanently delete both the database record and the physical file.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x"></i> Cancel
+                </button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete Letter
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const tableView = document.getElementById('tableView');
+    const cardView = document.getElementById('cardView');
+    const tableViewContainer = document.getElementById('tableViewContainer');
+    const cardViewContainer = document.getElementById('cardViewContainer');
+
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#lettersTable tbody tr');
+        const cards = document.querySelectorAll('#lettersCards .col-md-6');
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+
+    // View mode toggle
+    tableView.addEventListener('change', function() {
+        if (this.checked) {
+            tableViewContainer.classList.remove('d-none');
+            cardViewContainer.classList.add('d-none');
+        }
+    });
+
+    cardView.addEventListener('change', function() {
+        if (this.checked) {
+            tableViewContainer.classList.add('d-none');
+            cardViewContainer.classList.remove('d-none');
+        }
+    });
+});
+
+function filterStatus(status) {
+    const rows = document.querySelectorAll('#lettersTable tbody tr');
+    const cards = document.querySelectorAll('#lettersCards .col-md-6');
+
+    rows.forEach(row => {
+        if (status === 'all' || row.dataset.status === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    cards.forEach(card => {
+        if (status === 'all' || card.dataset.status === status) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // Update active button
+    document.querySelectorAll('.btn-toolbar button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+
+function showQRCode(letterNumber, qrCodeData) {
+    document.getElementById('modalLetterNumber').textContent = letterNumber;
+    document.getElementById('qrCodeContainer').innerHTML = 
+        '<img src="data:image/png;base64,' + qrCodeData + '" class="img-fluid" alt="QR Code">';
+    
+    const modal = new bootstrap.Modal(document.getElementById('qrModal'));
+    modal.show();
+}
+
+function downloadQR() {
+    const letterNumber = document.getElementById('modalLetterNumber').textContent;
+    const qrImage = document.querySelector('#qrCodeContainer img');
+    
+    if (qrImage) {
+        const link = document.createElement('a');
+        link.download = 'letter-' + letterNumber + '-qr.png';
+        link.href = qrImage.src;
+        link.click();
+    }
+}
+
+function confirmDelete(letterNumber, fileName) {
+    document.getElementById('deleteLetterNumber').textContent = letterNumber;
+    document.getElementById('deleteFileName').textContent = fileName;
+    document.getElementById('deleteForm').action = '/delete_letter/' + letterNumber;
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+</script>
+{% endblock %} 
