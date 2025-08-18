@@ -15,11 +15,20 @@ import json
 from io import BytesIO
 import base64
 from dotenv import load_dotenv
-import sendgrid
-from sendgrid.helpers.mail import Mail, Email, To, Content
+import mailtrap as mt
 
 # Load environment variables
 load_dotenv()
+
+# DEBUG: Check environment loading
+print("=== DEBUGGING ENV LOADING ===")
+print(f"Current working directory: {os.getcwd()}")
+print(f".env file exists: {os.path.exists('.env')}")
+print(f"DB_HOST from env: {os.getenv('DB_HOST', 'NOT_SET')}")
+print(f"DB_NAME from env: {os.getenv('DB_NAME', 'NOT_SET')}")
+print(f"DB_USER from env: {os.getenv('DB_USER', 'NOT_SET')}")
+print(f"DB_PASSWORD from env: {'SET' if os.getenv('DB_PASSWORD') else 'NOT_SET'}")
+print("===========================")
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-change-this-in-production')
@@ -34,9 +43,20 @@ DB_CONFIG = {
     'password': os.getenv('DB_PASSWORD', 'geec_password_123')
 }
 
-# SendGrid configuration
-SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
-SENDGRID_FROM_EMAIL = os.getenv('SENDGRID_FROM_EMAIL', 'noreply@yourcompany.com')
+# DEBUG: Test database connection
+print("=== TESTING DATABASE CONNECTION ===")
+print(f"Using DB_CONFIG: {dict(DB_CONFIG, password='***HIDDEN***')}")
+try:
+    test_conn = mysql.connector.connect(**DB_CONFIG)
+    print(" Database connection successful!")
+    test_conn.close()
+except Exception as e:
+    print(f" Database connection failed: {e}")
+print("=================================")
+
+# Mailtrap configuration
+MAILTRAP_API_KEY = os.getenv('MAILTRAP_API_KEY', '8de1c97158706b251d02f092316aaa51')
+MAILTRAP_FROM_EMAIL = os.getenv('MAILTRAP_FROM_EMAIL', 'jamshid@gulfextremeinc.com')
 
 # Create uploads directory if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -443,7 +463,7 @@ def update_settings():
     company_name = request.form.get('company_name', '')
     ceo_email = request.form.get('ceo_email', '')
     admin_email = request.form.get('admin_email', '')
-    sendgrid_api_key = request.form.get('sendgrid_api_key', '')
+    mailtrap_api_key = request.form.get('mailtrap_api_key', '')
     
     connection = get_db_connection()
     if connection:
@@ -497,11 +517,11 @@ def update_settings():
                 ON DUPLICATE KEY UPDATE setting_value = %s
             """, (admin_email, admin_email))
         
-        if sendgrid_api_key:
+        if mailtrap_api_key:
             cursor.execute("""
-                INSERT INTO settings (setting_key, setting_value) VALUES ('sendgrid_api_key', %s)
+                INSERT INTO settings (setting_key, setting_value) VALUES ('mailtrap_api_key', %s)
                 ON DUPLICATE KEY UPDATE setting_value = %s
-            """, (sendgrid_api_key, sendgrid_api_key))
+            """, (mailtrap_api_key, mailtrap_api_key))
         
         connection.commit()
         cursor.close()
@@ -860,8 +880,8 @@ def test_email():
                 <div style="background-color: #d4edda; border-left: 4px solid #27ae60; padding: 15px; margin: 20px 0;">
                     <h4 style="margin-top: 0; color: #155724;">Email Configuration Status:</h4>
                     <ul style="margin-bottom: 0;">
-                        <li>SendGrid integration: <strong>Working</strong></li>
-                        <li>From email: <strong>{SENDGRID_FROM_EMAIL}</strong></li>
+                        <li>Mailtrap integration: <strong>Working</strong></li>
+                        <li>From email: <strong>{MAILTRAP_FROM_EMAIL}</strong></li>
                         <li>Test timestamp: <strong>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</strong></li>
                     </ul>
                 </div>
@@ -880,8 +900,8 @@ def test_email():
         This is a test email from your {company_name} Document Management System.
         
         Email Configuration Status:
-        - SendGrid integration: Working
-        - From email: {SENDGRID_FROM_EMAIL}
+        - Mailtrap integration: Working
+        - From email: {MAILTRAP_FROM_EMAIL}
         - Test timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         
         This is an automated test from {company_name} Document Management System.
@@ -949,21 +969,23 @@ def delete_letter(letter_number):
     return redirect(url_for('letter_status'))
 
 def send_email_notification(to_email, subject, html_content, plain_content=None):
-    """Send email using SendGrid"""
+    """Send email using Mailtrap"""
     try:
-        sg = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
-        
-        from_email = Email(SENDGRID_FROM_EMAIL)
-        to_email = To(to_email)
-        
         if plain_content is None:
             plain_content = html_content
         
-        mail = Mail(from_email, to_email, subject, Content("text/plain", plain_content))
-        mail.add_content(Content("text/html", html_content))
+        mail = mt.Mail(
+            sender=mt.Address(email=MAILTRAP_FROM_EMAIL, name="GEEC DMS"),
+            to=[mt.Address(email=to_email)],
+            subject=subject,
+            text=plain_content,
+            html=html_content,
+        )
         
-        response = sg.send(mail)
-        return True, f"Email sent successfully. Status: {response.status_code}"
+        client = mt.MailtrapClient(token=MAILTRAP_API_KEY)
+        response = client.send(mail)
+        
+        return True, f"Email sent successfully via Mailtrap"
     
     except Exception as e:
         return False, f"Email sending failed: {str(e)}"
@@ -981,4 +1003,14 @@ def get_setting(key, default=None):
     return default
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001) 
+    # Production settings
+    import os
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    port = int(os.getenv('PORT', 5000))
+    
+    if os.getenv('FLASK_ENV') == 'production':
+        # Production mode
+        app.run(debug=False, host='0.0.0.0', port=port)
+    else:
+        # Development mode
+        app.run(debug=debug_mode, port=port) 

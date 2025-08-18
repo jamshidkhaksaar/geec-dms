@@ -1,0 +1,23 @@
+# Production Environment Variables for GEEC DMS
+# Copy this file to .env and update with your actual values
+
+# Security - Generate a strong secret key
+SECRET_KEY=your-very-secure-secret-key-change-this-immediately
+
+# Database Configuration (update with your Namecheap hosting database details)
+DB_HOST=localhost
+DB_NAME=your_database_name
+DB_USER=your_database_user
+DB_PASSWORD=your_database_password
+
+# Email Configuration (Mailtrap)
+MAILTRAP_API_KEY=8de1c97158706b251d02f092316aaa51
+MAILTRAP_FROM_EMAIL=jamshid@gulfextremeinc.com
+
+# Application Settings
+FLASK_ENV=production
+FLASK_DEBUG=False
+
+# Optional: Override default settings
+# MAX_CONTENT_LENGTH=16777216
+# UPLOAD_FOLDER=uploads 
