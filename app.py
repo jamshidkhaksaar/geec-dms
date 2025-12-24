@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from functools import wraps
+from functools import wraps, lru_cache
 import os
 import uuid
 import qrcode
@@ -75,6 +75,7 @@ def get_db_connection():
         print(f"Error connecting to MySQL: {e}")
         return None
 
+@lru_cache(maxsize=1)
 def get_company_info():
     """Get company information from settings"""
     connection = get_db_connection()
@@ -527,6 +528,9 @@ def update_settings():
         cursor.close()
         connection.close()
         
+        # Clear the company info cache so changes take effect immediately
+        get_company_info.cache_clear()
+
         flash('Settings updated successfully!')
     
     return redirect(url_for('settings'))
