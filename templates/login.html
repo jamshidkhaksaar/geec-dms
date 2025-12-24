@@ -31,7 +31,12 @@
                         <label for="password" class="form-label">
                             <i class="bi bi-lock"></i> Password
                         </label>
-                        <input type="password" class="form-control form-control-lg" id="password" name="password" required>
+                        <div class="input-group">
+                            <input type="password" class="form-control form-control-lg" id="password" name="password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword" aria-label="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="d-grid mb-3">
@@ -77,6 +82,29 @@ document.addEventListener('DOMContentLoaded', function() {
         card.style.opacity = '1';
         card.style.transform = 'translateY(0)';
     }, 100);
+
+    // Password toggle functionality
+    const togglePassword = document.getElementById('togglePassword');
+    const password = document.getElementById('password');
+
+    if (togglePassword && password) {
+        togglePassword.addEventListener('click', function() {
+            // Toggle the type attribute
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+
+            // Toggle the icon
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('bi-eye');
+                icon.classList.toggle('bi-eye-slash');
+            }
+
+            // Toggle aria-label for accessibility
+            const label = type === 'password' ? 'Show password' : 'Hide password';
+            this.setAttribute('aria-label', label);
+        });
+    }
 });
 </script>
 {% endblock %} 
