@@ -43,17 +43,6 @@ DB_CONFIG = {
     'password': os.getenv('DB_PASSWORD', 'geec_password_123')
 }
 
-# DEBUG: Test database connection
-print("=== TESTING DATABASE CONNECTION ===")
-print(f"Using DB_CONFIG: {dict(DB_CONFIG, password='***HIDDEN***')}")
-try:
-    test_conn = mysql.connector.connect(**DB_CONFIG)
-    print(" Database connection successful!")
-    test_conn.close()
-except Exception as e:
-    print(f" Database connection failed: {e}")
-print("=================================")
-
 # Mailtrap configuration
 MAILTRAP_API_KEY = os.getenv('MAILTRAP_API_KEY', '8de1c97158706b251d02f092316aaa51')
 MAILTRAP_FROM_EMAIL = os.getenv('MAILTRAP_FROM_EMAIL', 'jamshid@gulfextremeinc.com')
