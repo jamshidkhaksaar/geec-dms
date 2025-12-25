@@ -20,16 +20,6 @@ import mailtrap as mt
 # Load environment variables
 load_dotenv()
 
-# DEBUG: Check environment loading
-print("=== DEBUGGING ENV LOADING ===")
-print(f"Current working directory: {os.getcwd()}")
-print(f".env file exists: {os.path.exists('.env')}")
-print(f"DB_HOST from env: {os.getenv('DB_HOST', 'NOT_SET')}")
-print(f"DB_NAME from env: {os.getenv('DB_NAME', 'NOT_SET')}")
-print(f"DB_USER from env: {os.getenv('DB_USER', 'NOT_SET')}")
-print(f"DB_PASSWORD from env: {'SET' if os.getenv('DB_PASSWORD') else 'NOT_SET'}")
-print("===========================")
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-change-this-in-production')
 app.config['UPLOAD_FOLDER'] = 'uploads'
