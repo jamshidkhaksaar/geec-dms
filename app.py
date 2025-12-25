@@ -528,6 +528,9 @@ def update_settings():
         cursor.close()
         connection.close()
         
+        # Clear the company info cache so changes take effect immediately
+        get_company_info.cache_clear()
+
         flash('Settings updated successfully!')
         # Clear the cache to reflect changes immediately
         get_company_info.cache_clear()
