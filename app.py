@@ -55,7 +55,7 @@ except Exception as e:
 print("=================================")
 
 # Mailtrap configuration
-MAILTRAP_API_KEY = os.getenv('MAILTRAP_API_KEY', '8de1c97158706b251d02f092316aaa51')
+MAILTRAP_API_KEY = os.getenv('MAILTRAP_API_KEY')
 MAILTRAP_FROM_EMAIL = os.getenv('MAILTRAP_FROM_EMAIL', 'jamshid@gulfextremeinc.com')
 
 # Create uploads directory if it doesn't exist
@@ -977,6 +977,15 @@ def delete_letter(letter_number):
 def send_email_notification(to_email, subject, html_content, plain_content=None):
     """Send email using Mailtrap"""
     try:
+        # Get API key from env or database
+        api_key = MAILTRAP_API_KEY
+        if not api_key:
+            api_key = get_setting('mailtrap_api_key')
+
+        if not api_key:
+            print("Mailtrap API key not configured")
+            return False, "Mailtrap API key not configured"
+
         if plain_content is None:
             plain_content = html_content
         
@@ -988,7 +997,7 @@ def send_email_notification(to_email, subject, html_content, plain_content=None)
             html=html_content,
         )
         
-        client = mt.MailtrapClient(token=MAILTRAP_API_KEY)
+        client = mt.MailtrapClient(token=api_key)
         response = client.send(mail)
         
         return True, f"Email sent successfully via Mailtrap"
