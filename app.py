@@ -509,10 +509,12 @@ def update_settings():
         
         # Clear the company info cache so changes take effect immediately
         get_company_info.cache_clear()
+        get_setting.cache_clear()
 
         flash('Settings updated successfully!')
         # Clear the cache to reflect changes immediately
         get_company_info.cache_clear()
+        get_setting.cache_clear()
     
     return redirect(url_for('settings'))
 
@@ -984,6 +986,7 @@ def send_email_notification(to_email, subject, html_content, plain_content=None)
     except Exception as e:
         return False, f"Email sending failed: {str(e)}"
 
+@lru_cache(maxsize=32)
 def get_setting(key, default=None):
     """Get setting value from database"""
     connection = get_db_connection()
