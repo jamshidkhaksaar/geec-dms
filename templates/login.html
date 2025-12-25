@@ -19,7 +19,7 @@
                 </h3>
             </div>
             <div class="card-body p-5">
-                <form method="POST" action="{{ url_for('login') }}">
+                <form method="POST" action="{{ url_for('login') }}" id="loginForm">
                     <div class="mb-4">
                         <label for="username" class="form-label">
                             <i class="bi bi-person"></i> Username
@@ -40,7 +40,7 @@
                     </div>
                     
                     <div class="d-grid mb-3">
-                        <button type="submit" class="btn btn-primary btn-lg">
+                        <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">
                             <i class="bi bi-box-arrow-in-right"></i> Login
                         </button>
                     </div>
@@ -103,6 +103,29 @@ document.addEventListener('DOMContentLoaded', function() {
             // Toggle aria-label for accessibility
             const label = type === 'password' ? 'Show password' : 'Hide password';
             this.setAttribute('aria-label', label);
+        });
+    }
+
+    // Add loading state to login button
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+
+    if (loginForm && loginBtn) {
+        loginForm.addEventListener('submit', function() {
+            // Only add loading state if form is valid
+            if (this.checkValidity()) {
+                const originalText = loginBtn.innerHTML;
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Logging in...';
+
+                // Restore button if page is restored from cache (bfcache)
+                window.addEventListener('pageshow', function(event) {
+                    if (event.persisted) {
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = originalText;
+                    }
+                });
+            }
         });
     }
 });
