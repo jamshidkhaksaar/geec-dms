@@ -16,11 +16,13 @@ from io import BytesIO
 import base64
 from dotenv import load_dotenv
 import mailtrap as mt
+from flask_wtf.csrf import CSRFProtect
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-change-this-in-production')
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
