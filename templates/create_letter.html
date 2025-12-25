@@ -31,14 +31,14 @@
                         <label for="letter_file" class="form-label">
                             <i class="bi bi-file-earmark-pdf"></i> Select PDF File *
                         </label>
-                        <div class="drop-zone" id="dropZone">
+                        <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Upload PDF file drop zone" aria-describedby="dropZoneHelp">
                             <div class="drop-zone-content">
-                                <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
-                                <p class="lead mb-2">Drag and drop your PDF file here</p>
+                                <i class="bi bi-cloud-upload display-4 text-muted mb-3" aria-hidden="true"></i>
+                                <p class="lead mb-2" id="dropZoneHelp">Drag and drop your PDF file here</p>
                                 <p class="text-muted mb-3">or</p>
-                                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('letter_file').click()">
-                                    <i class="bi bi-folder2-open"></i> Browse Files
-                                </button>
+                                <span class="btn btn-outline-primary">
+                                    <i class="bi bi-folder2-open" aria-hidden="true"></i> Browse Files
+                                </span>
                                 <input type="file" class="form-control d-none" id="letter_file" name="letter_file" accept=".pdf" required>
                             </div>
                             <div class="drop-zone-preview d-none" id="filePreview">
@@ -179,6 +179,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Keyboard navigation and click handler for drop zone
+    dropZone.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    dropZone.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInput.click();
+        }
+    });
+
     // File input change
     fileInput.addEventListener('change', function(e) {
         if (e.target.files.length > 0) {
@@ -255,6 +267,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .drop-zone:hover {
     border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.02);
+}
+
+.drop-zone:focus {
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     background-color: rgba(13, 110, 253, 0.02);
 }
 
