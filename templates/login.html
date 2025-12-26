@@ -20,6 +20,7 @@
             </div>
             <div class="card-body p-5">
                 <form method="POST" action="{{ url_for('login') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-4">
                         <label for="username" class="form-label">
                             <i class="bi bi-person"></i> Username
