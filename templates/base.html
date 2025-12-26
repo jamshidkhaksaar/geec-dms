@@ -19,8 +19,8 @@
 
     <!-- Mobile Toggle Button -->
     {% if session.user_id %}
-    <button class="btn btn-primary sidebar-toggle d-md-none" type="button" id="sidebarToggle">
-        <i class="bi bi-list"></i>
+    <button class="btn btn-primary sidebar-toggle d-md-none" type="button" id="sidebarToggle" aria-label="Toggle navigation">
+        <i class="bi bi-list" aria-hidden="true"></i>
     </button>
     {% endif %}
 
@@ -44,8 +44,8 @@
                             <span class="fw-bold">{{ company_info.name if company_info else 'GEEC' }} DMS</span>
                         </a>
                         <!-- Close button for mobile only -->
-                        <button class="btn btn-sm btn-outline-light d-md-none" id="sidebarClose">
-                            <i class="bi bi-x-lg"></i>
+                        <button class="btn btn-sm btn-outline-light d-md-none" id="sidebarClose" aria-label="Close navigation">
+                            <i class="bi bi-x-lg" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
