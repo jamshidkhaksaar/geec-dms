@@ -19,8 +19,8 @@
 
     <!-- Mobile Toggle Button -->
     {% if session.user_id %}
-    <button class="btn btn-primary sidebar-toggle d-md-none" type="button" id="sidebarToggle">
-        <i class="bi bi-list"></i>
+    <button class="btn btn-primary sidebar-toggle d-md-none" type="button" id="sidebarToggle" aria-label="Toggle Sidebar">
+        <i class="bi bi-list" aria-hidden="true"></i>
     </button>
     {% endif %}
 
@@ -44,8 +44,8 @@
                             <span class="fw-bold">{{ company_info.name if company_info else 'GEEC' }} DMS</span>
                         </a>
                         <!-- Close button for mobile only -->
-                        <button class="btn btn-sm btn-outline-light d-md-none" id="sidebarClose">
-                            <i class="bi bi-x-lg"></i>
+                        <button class="btn btn-sm btn-outline-light d-md-none" id="sidebarClose" aria-label="Close Sidebar">
+                            <i class="bi bi-x-lg" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
@@ -134,11 +134,11 @@
                                 <div class="social-links">
                                     <p class="mb-2 small text-muted">Connect with me</p>
                                     <div class="d-flex justify-content-md-end justify-content-center gap-3">
-                                        <a href="https://linkedin.com/in/jamshidkhaksaar" target="_blank" class="social-link linkedin" title="LinkedIn Profile">
-                                            <i class="bi bi-linkedin"></i>
+                                        <a href="https://linkedin.com/in/jamshidkhaksaar" target="_blank" class="social-link linkedin" title="LinkedIn Profile" aria-label="LinkedIn Profile">
+                                            <i class="bi bi-linkedin" aria-hidden="true"></i>
                                         </a>
-                                        <a href="https://www.github.com/jamshidkhaksaar" target="_blank" class="social-link github" title="GitHub Profile">
-                                            <i class="bi bi-github"></i>
+                                        <a href="https://www.github.com/jamshidkhaksaar" target="_blank" class="social-link github" title="GitHub Profile" aria-label="GitHub Profile">
+                                            <i class="bi bi-github" aria-hidden="true"></i>
                                         </a>
                                     </div>
                                 </div>
