@@ -248,17 +248,25 @@ def letter_status():
     if connection:
         cursor = connection.cursor(dictionary=True)
         
+        # Select only necessary columns to reduce payload size (exclude qr_code and verification_comments)
+        # Note: id and filename are required for internal logic (links, downloads)
+        columns = """
+            l.id, l.letter_number, l.filename, l.original_filename, l.uploaded_by, l.upload_date, l.status,
+            l.verified_by, l.verified_date,
+            u1.full_name as uploaded_by_name, u2.full_name as verified_by_name
+        """
+
         if session['role'] in ['Admin', 'CEO']:
-            cursor.execute("""
-                SELECT l.*, u1.full_name as uploaded_by_name, u2.full_name as verified_by_name
+            cursor.execute(f"""
+                SELECT {columns}
                 FROM letters l
                 LEFT JOIN users u1 ON l.uploaded_by = u1.id
                 LEFT JOIN users u2 ON l.verified_by = u2.id
                 ORDER BY l.upload_date DESC
             """)
         else:
-            cursor.execute("""
-                SELECT l.*, u1.full_name as uploaded_by_name, u2.full_name as verified_by_name
+            cursor.execute(f"""
+                SELECT {columns}
                 FROM letters l
                 LEFT JOIN users u1 ON l.uploaded_by = u1.id
                 LEFT JOIN users u2 ON l.verified_by = u2.id
@@ -910,6 +918,31 @@ def clear_cache():
         return jsonify({'success': True, 'message': 'Cache cleared successfully'})
     except Exception as e:
         return jsonify({'success': False, 'error': f'Cache clearing failed: {str(e)}'})
+
+@app.route('/api/get-qr-code/<letter_number>')
+@login_required
+def get_letter_qr_code(letter_number):
+    """Get QR code for a letter (lazy loading)"""
+    connection = get_db_connection()
+    qr_code = None
+
+    if connection:
+        cursor = connection.cursor(dictionary=True)
+        # Check permissions similar to view_letter
+        cursor.execute("SELECT qr_code, uploaded_by FROM letters WHERE letter_number = %s", (letter_number,))
+        result = cursor.fetchone()
+        cursor.close()
+        connection.close()
+
+        if result:
+            # Check permissions
+            if (session.get('role') in ['Admin', 'CEO'] or
+                result['uploaded_by'] == session.get('user_id')):
+                return jsonify({'success': True, 'qr_code': result['qr_code']})
+            else:
+                return jsonify({'success': False, 'error': 'Access denied'}), 403
+
+    return jsonify({'success': False, 'error': 'Letter not found'}), 404
 
 @app.route('/delete_letter/<letter_number>', methods=['POST'])
 @admin_required
