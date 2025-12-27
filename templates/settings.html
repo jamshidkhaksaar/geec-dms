@@ -20,6 +20,7 @@
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('update_settings') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label for="company_name" class="form-label">Company Name</label>
                         <input type="text" class="form-control" id="company_name" name="company_name" 
@@ -56,6 +57,7 @@
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('update_settings') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label for="ceo_email" class="form-label">CEO Email Address</label>
                         <input type="email" class="form-control" id="ceo_email" name="ceo_email" 
@@ -96,6 +98,7 @@
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('update_settings') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label for="max_file_size" class="form-label">Maximum File Size (MB)</label>
                         <input type="number" class="form-control" id="max_file_size" name="max_file_size" 
@@ -283,6 +286,7 @@ function testEmailConnection() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
     .then(response => response.json())
@@ -305,6 +309,7 @@ function clearCache() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
         .then(response => response.json())

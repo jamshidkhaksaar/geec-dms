@@ -86,6 +86,7 @@
                 <div class="mb-4">
                     <form method="POST" action="{{ url_for('approve_letter', letter_number=letter.letter_number) }}" 
                           onsubmit="return confirmAction('approve')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="mb-3">
                             <label for="approve_comments" class="form-label">
                                 <i class="bi bi-chat-text"></i> Approval Comments (Optional)
@@ -109,6 +110,7 @@
                 <div class="mb-4">
                     <form method="POST" action="{{ url_for('reject_letter', letter_number=letter.letter_number) }}" 
                           onsubmit="return confirmAction('reject')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="mb-3">
                             <label for="reject_comments" class="form-label">
                                 <i class="bi bi-chat-text"></i> Rejection Reason
