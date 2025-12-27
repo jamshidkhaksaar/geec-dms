@@ -25,6 +25,7 @@
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('create_letter') }}" enctype="multipart/form-data" id="uploadForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     
                     <!-- File Upload Area -->
                     <div class="mb-4">
