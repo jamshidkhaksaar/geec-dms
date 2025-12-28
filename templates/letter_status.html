@@ -108,28 +108,29 @@
                             <td>
                                 <div class="btn-group" role="group">
                                     <a href="{{ url_for('view_letter', letter_number=letter.letter_number) }}" 
-                                       class="btn btn-sm btn-outline-primary" title="View Letter Details">
-                                        <i class="bi bi-file-earmark-text"></i>
+                                       class="btn btn-sm btn-outline-primary" title="View Letter Details" aria-label="View Letter Details">
+                                        <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm btn-outline-info" 
-                                            onclick="showQRCode('{{ letter.letter_number }}', '{{ letter.qr_code }}')">
+                                            onclick="showQRCode('{{ letter.letter_number }}')">
                                         <i class="bi bi-qr-code"></i>
                                     </button>
                                     <a href="{{ url_for('verify_letter', letter_number=letter.letter_number) }}" 
-                                       class="btn btn-sm btn-outline-secondary" target="_blank" title="Public Verification">
-                                        <i class="bi bi-eye"></i>
+                                       class="btn btn-sm btn-outline-secondary" target="_blank" title="Public Verification" aria-label="Public Verification">
+                                        <i class="bi bi-eye" aria-hidden="true"></i>
                                     </a>
                                     {% if session.role in ['CEO', 'Admin'] and letter.status == 'Pending' %}
                                     <a href="{{ url_for('ceo_verify', letter_number=letter.letter_number) }}" 
-                                       class="btn btn-sm btn-outline-success" title="CEO Verification">
-                                        <i class="bi bi-shield-check"></i>
+                                       class="btn btn-sm btn-outline-success" title="CEO Verification" aria-label="CEO Verification">
+                                        <i class="bi bi-shield-check" aria-hidden="true"></i>
                                     </a>
                                     {% endif %}
                                     {% if session.role == 'Admin' %}
                                     <button type="button" class="btn btn-sm btn-outline-danger" 
                                             onclick="confirmDelete('{{ letter.letter_number }}', '{{ letter.original_filename }}')" 
-                                            title="Delete Letter (Admin Only)">
-                                        <i class="bi bi-trash"></i>
+                                            title="Delete Letter (Admin Only)"
+                                            aria-label="Delete Letter">
+                                        <i class="bi bi-trash" aria-hidden="true"></i>
                                     </button>
                                     {% endif %}
                                 </div>
@@ -202,7 +203,7 @@
                                     <i class="bi bi-file-earmark-text"></i> Details
                                 </a>
                                 <button type="button" class="btn btn-sm btn-outline-info" 
-                                        onclick="showQRCode('{{ letter.letter_number }}', '{{ letter.qr_code }}')">
+                                        onclick="showQRCode('{{ letter.letter_number }}')">
                                     <i class="bi bi-qr-code"></i> QR
                                 </button>
                                 {% if session.role in ['CEO', 'Admin'] and letter.status == 'Pending' %}
@@ -217,7 +218,7 @@
                         <div class="col-12 mt-2">
                             <button type="button" class="btn btn-sm btn-outline-danger w-100" 
                                     onclick="confirmDelete('{{ letter.letter_number }}', '{{ letter.original_filename }}')">
-                                <i class="bi bi-trash"></i> Delete Letter (Admin Only)
+                                <i class="bi bi-trash" aria-hidden="true"></i> Delete Letter (Admin Only)
                             </button>
                         </div>
                         {% endif %}
@@ -287,6 +288,7 @@
                     <i class="bi bi-x"></i> Cancel
                 </button>
                 <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button type="submit" class="btn btn-danger">
                         <i class="bi bi-trash"></i> Delete Letter
                     </button>
@@ -366,13 +368,27 @@ function filterStatus(status) {
     event.target.classList.add('active');
 }
 
-function showQRCode(letterNumber, qrCodeData) {
+function showQRCode(letterNumber) {
     document.getElementById('modalLetterNumber').textContent = letterNumber;
-    document.getElementById('qrCodeContainer').innerHTML = 
-        '<img src="data:image/png;base64,' + qrCodeData + '" class="img-fluid" alt="QR Code">';
+    const container = document.getElementById('qrCodeContainer');
+    container.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
     
     const modal = new bootstrap.Modal(document.getElementById('qrModal'));
     modal.show();
+
+    fetch(`/api/get-qr-code/${letterNumber}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                container.innerHTML = '<img src="data:image/png;base64,' + data.qr_code + '" class="img-fluid" alt="QR Code">';
+            } else {
+                container.innerHTML = '<div class="alert alert-danger">Failed to load QR code</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            container.innerHTML = '<div class="alert alert-danger">Error loading QR code</div>';
+        });
 }
 
 function downloadQR() {
