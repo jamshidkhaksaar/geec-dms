@@ -102,6 +102,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{{ url_for('add_user') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="username" class="form-label">Username *</label>
@@ -152,6 +153,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{{ url_for('edit_user') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <input type="hidden" id="edit_user_id" name="user_id">
                 <div class="modal-body">
                     <div class="mb-3">
@@ -244,8 +246,20 @@ function deleteUser(id, username) {
         input.type = 'hidden';
         input.name = 'user_id';
         input.value = id;
+
+        // CSRF Token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = "{{ csrf_token() }}";
         
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
         form.appendChild(input);
+        form.appendChild(csrfInput);
         document.body.appendChild(form);
         form.submit();
     }

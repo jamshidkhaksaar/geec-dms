@@ -291,7 +291,11 @@ function initializeDashboard() {
 }
 
 function refreshDashboardStats() {
-    fetch('/api/dashboard-stats')
+    fetch('/api/dashboard-stats', {
+        headers: {
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
         .then(response => response.json())
         .then(data => {
             updateStatsCards(data);
@@ -411,6 +415,7 @@ function refreshLetterStatus() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
         body: JSON.stringify({ letter_numbers: letterNumbers })
     })
