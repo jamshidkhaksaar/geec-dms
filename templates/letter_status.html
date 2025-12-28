@@ -112,7 +112,7 @@
                                         <i class="bi bi-file-earmark-text"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm btn-outline-info" 
-                                            onclick="showQRCode('{{ letter.letter_number }}', '{{ letter.qr_code }}')">
+                                            onclick="showQRCode('{{ letter.letter_number }}')">
                                         <i class="bi bi-qr-code"></i>
                                     </button>
                                     <a href="{{ url_for('verify_letter', letter_number=letter.letter_number) }}" 
@@ -202,7 +202,7 @@
                                     <i class="bi bi-file-earmark-text"></i> Details
                                 </a>
                                 <button type="button" class="btn btn-sm btn-outline-info" 
-                                        onclick="showQRCode('{{ letter.letter_number }}', '{{ letter.qr_code }}')">
+                                        onclick="showQRCode('{{ letter.letter_number }}')">
                                     <i class="bi bi-qr-code"></i> QR
                                 </button>
                                 {% if session.role in ['CEO', 'Admin'] and letter.status == 'Pending' %}
@@ -367,13 +367,27 @@ function filterStatus(status) {
     event.target.classList.add('active');
 }
 
-function showQRCode(letterNumber, qrCodeData) {
+function showQRCode(letterNumber) {
     document.getElementById('modalLetterNumber').textContent = letterNumber;
-    document.getElementById('qrCodeContainer').innerHTML = 
-        '<img src="data:image/png;base64,' + qrCodeData + '" class="img-fluid" alt="QR Code">';
+    const container = document.getElementById('qrCodeContainer');
+    container.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
     
     const modal = new bootstrap.Modal(document.getElementById('qrModal'));
     modal.show();
+
+    fetch(`/api/get-qr-code/${letterNumber}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                container.innerHTML = '<img src="data:image/png;base64,' + data.qr_code + '" class="img-fluid" alt="QR Code">';
+            } else {
+                container.innerHTML = '<div class="alert alert-danger">Failed to load QR code</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            container.innerHTML = '<div class="alert alert-danger">Error loading QR code</div>';
+        });
 }
 
 function downloadQR() {
