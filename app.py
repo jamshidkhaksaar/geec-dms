@@ -933,7 +933,8 @@ def test_email():
 def clear_cache():
     """Clear application cache"""
     try:
-        # For now, just return success - can implement actual cache clearing later
+        get_company_info.cache_clear()
+        get_setting.cache_clear()
         return jsonify({'success': True, 'message': 'Cache cleared successfully'})
     except Exception as e:
         return jsonify({'success': False, 'error': f'Cache clearing failed: {str(e)}'})
