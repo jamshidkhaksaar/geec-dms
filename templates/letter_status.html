@@ -108,21 +108,21 @@
                             <td>
                                 <div class="btn-group" role="group">
                                     <a href="{{ url_for('view_letter', letter_number=letter.letter_number) }}" 
-                                       class="btn btn-sm btn-outline-primary" title="View Letter Details">
-                                        <i class="bi bi-file-earmark-text"></i>
+                                       class="btn btn-sm btn-outline-primary" title="View Letter Details" aria-label="View Letter Details">
+                                        <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm btn-outline-info" 
                                             onclick="showQRCode('{{ letter.letter_number }}')">
                                         <i class="bi bi-qr-code"></i>
                                     </button>
                                     <a href="{{ url_for('verify_letter', letter_number=letter.letter_number) }}" 
-                                       class="btn btn-sm btn-outline-secondary" target="_blank" title="Public Verification">
-                                        <i class="bi bi-eye"></i>
+                                       class="btn btn-sm btn-outline-secondary" target="_blank" title="Public Verification" aria-label="Public Verification">
+                                        <i class="bi bi-eye" aria-hidden="true"></i>
                                     </a>
                                     {% if session.role in ['CEO', 'Admin'] and letter.status == 'Pending' %}
                                     <a href="{{ url_for('ceo_verify', letter_number=letter.letter_number) }}" 
-                                       class="btn btn-sm btn-outline-success" title="CEO Verification">
-                                        <i class="bi bi-shield-check"></i>
+                                       class="btn btn-sm btn-outline-success" title="CEO Verification" aria-label="CEO Verification">
+                                        <i class="bi bi-shield-check" aria-hidden="true"></i>
                                     </a>
                                     {% endif %}
                                     {% if session.role == 'Admin' %}
