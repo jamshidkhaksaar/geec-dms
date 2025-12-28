@@ -62,13 +62,17 @@
                         <td>
                             <div class="btn-group" role="group">
                                 <button type="button" class="btn btn-sm btn-outline-primary" 
-                                        onclick="editUser({{ user.id }}, '{{ user.username }}', '{{ user.full_name }}', '{{ user.email }}', '{{ user.role }}')">
-                                    <i class="bi bi-pencil"></i>
+                                        onclick="editUser({{ user.id }}, '{{ user.username }}', '{{ user.full_name }}', '{{ user.email }}', '{{ user.role }}')"
+                                        aria-label="Edit user {{ user.username }}"
+                                        title="Edit User">
+                                    <i class="bi bi-pencil" aria-hidden="true"></i>
                                 </button>
                                 {% if user.id != session.user_id %}
                                 <button type="button" class="btn btn-sm btn-outline-danger" 
-                                        onclick="deleteUser({{ user.id }}, '{{ user.username }}')">
-                                    <i class="bi bi-trash"></i>
+                                        onclick="deleteUser({{ user.id }}, '{{ user.username }}')"
+                                        aria-label="Delete user {{ user.username }}"
+                                        title="Delete User">
+                                    <i class="bi bi-trash" aria-hidden="true"></i>
                                 </button>
                                 {% endif %}
                             </div>
