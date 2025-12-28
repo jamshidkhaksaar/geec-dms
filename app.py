@@ -35,6 +35,18 @@ DB_CONFIG = {
     'password': os.getenv('DB_PASSWORD', 'geec_password_123')
 }
 
+# Connection pool
+db_pool = None
+try:
+    db_pool = mysql.connector.pooling.MySQLConnectionPool(
+        pool_name="geec_pool",
+        pool_size=5,
+        pool_reset_session=True,
+        **DB_CONFIG
+    )
+except Error as e:
+    print(f"Error creating connection pool: {e}")
+
 # Mailtrap configuration
 MAILTRAP_API_KEY = os.getenv('MAILTRAP_API_KEY')
 MAILTRAP_FROM_EMAIL = os.getenv('MAILTRAP_FROM_EMAIL', 'jamshid@gulfextremeinc.com')
@@ -50,8 +62,11 @@ def inject_company_info():
 def get_db_connection():
     """Get database connection"""
     try:
-        connection = mysql.connector.connect(**DB_CONFIG)
-        return connection
+        if db_pool:
+            return db_pool.get_connection()
+        else:
+            # Fallback to direct connection if pool is not initialized
+            return mysql.connector.connect(**DB_CONFIG)
     except Error as e:
         print(f"Error connecting to MySQL: {e}")
         return None
