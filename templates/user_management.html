@@ -247,13 +247,19 @@ function deleteUser(id, username) {
         input.name = 'user_id';
         input.value = id;
 
-        const csrf = document.createElement('input');
-        csrf.type = 'hidden';
-        csrf.name = 'csrf_token';
-        csrf.value = '{{ csrf_token() }}';
+        // CSRF Token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = "{{ csrf_token() }}";
         
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
         form.appendChild(input);
-        form.appendChild(csrf);
+        form.appendChild(csrfInput);
         document.body.appendChild(form);
         form.submit();
     }

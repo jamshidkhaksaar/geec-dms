@@ -282,10 +282,12 @@ setInterval(updateServerTime, 1000);
 
 // Test email connection
 function testEmailConnection() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     fetch('/api/test-email', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         }
     })
     .then(response => response.json())
@@ -304,10 +306,12 @@ function testEmailConnection() {
 // Clear cache
 function clearCache() {
     if (confirm('Are you sure you want to clear the application cache?')) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         fetch('/api/clear-cache', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
             }
         })
         .then(response => response.json())
