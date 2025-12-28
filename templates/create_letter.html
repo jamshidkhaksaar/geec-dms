@@ -25,6 +25,7 @@
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('create_letter') }}" enctype="multipart/form-data" id="uploadForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     
                     <!-- File Upload Area -->
                     <div class="mb-4">
@@ -48,8 +49,8 @@
                                         <div class="fw-bold" id="fileName"></div>
                                         <div class="text-muted small" id="fileSize"></div>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFile()">
-                                        <i class="bi bi-x-lg"></i>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFile()" aria-label="Remove file">
+                                        <i class="bi bi-x-lg" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>
