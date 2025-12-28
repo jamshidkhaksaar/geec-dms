@@ -98,6 +98,7 @@
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('update_settings') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="mb-3">
                         <label for="max_file_size" class="form-label">Maximum File Size (MB)</label>
                         <input type="number" class="form-control" id="max_file_size" name="max_file_size" 
