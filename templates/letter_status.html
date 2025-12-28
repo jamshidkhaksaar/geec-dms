@@ -128,8 +128,9 @@
                                     {% if session.role == 'Admin' %}
                                     <button type="button" class="btn btn-sm btn-outline-danger" 
                                             onclick="confirmDelete('{{ letter.letter_number }}', '{{ letter.original_filename }}')" 
-                                            title="Delete Letter (Admin Only)">
-                                        <i class="bi bi-trash"></i>
+                                            title="Delete Letter (Admin Only)"
+                                            aria-label="Delete Letter">
+                                        <i class="bi bi-trash" aria-hidden="true"></i>
                                     </button>
                                     {% endif %}
                                 </div>
@@ -217,7 +218,7 @@
                         <div class="col-12 mt-2">
                             <button type="button" class="btn btn-sm btn-outline-danger w-100" 
                                     onclick="confirmDelete('{{ letter.letter_number }}', '{{ letter.original_filename }}')">
-                                <i class="bi bi-trash"></i> Delete Letter (Admin Only)
+                                <i class="bi bi-trash" aria-hidden="true"></i> Delete Letter (Admin Only)
                             </button>
                         </div>
                         {% endif %}
