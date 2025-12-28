@@ -12,6 +12,9 @@
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -19,7 +22,7 @@
 
     <!-- Mobile Toggle Button -->
     {% if session.user_id %}
-    <button class="btn btn-primary sidebar-toggle d-md-none" type="button" id="sidebarToggle" aria-label="Toggle navigation">
+    <button class="btn btn-primary sidebar-toggle d-md-none" type="button" id="sidebarToggle" aria-label="Toggle navigation sidebar">
         <i class="bi bi-list" aria-hidden="true"></i>
     </button>
     {% endif %}
@@ -44,7 +47,7 @@
                             <span class="fw-bold">{{ company_info.name if company_info else 'GEEC' }} DMS</span>
                         </a>
                         <!-- Close button for mobile only -->
-                        <button class="btn btn-sm btn-outline-light d-md-none" id="sidebarClose" aria-label="Close navigation">
+                        <button class="btn btn-sm btn-outline-light d-md-none" id="sidebarClose" aria-label="Close sidebar">
                             <i class="bi bi-x-lg" aria-hidden="true"></i>
                         </button>
                     </div>
@@ -134,11 +137,11 @@
                                 <div class="social-links">
                                     <p class="mb-2 small text-muted">Connect with me</p>
                                     <div class="d-flex justify-content-md-end justify-content-center gap-3">
-                                        <a href="https://linkedin.com/in/jamshidkhaksaar" target="_blank" class="social-link linkedin" title="LinkedIn Profile">
-                                            <i class="bi bi-linkedin"></i>
+                                        <a href="https://linkedin.com/in/jamshidkhaksaar" target="_blank" class="social-link linkedin" title="LinkedIn Profile" aria-label="Visit LinkedIn Profile">
+                                            <i class="bi bi-linkedin" aria-hidden="true"></i>
                                         </a>
-                                        <a href="https://www.github.com/jamshidkhaksaar" target="_blank" class="social-link github" title="GitHub Profile">
-                                            <i class="bi bi-github"></i>
+                                        <a href="https://www.github.com/jamshidkhaksaar" target="_blank" class="social-link github" title="GitHub Profile" aria-label="Visit GitHub Profile">
+                                            <i class="bi bi-github" aria-hidden="true"></i>
                                         </a>
                                     </div>
                                 </div>
