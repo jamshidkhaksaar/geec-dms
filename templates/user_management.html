@@ -246,6 +246,12 @@ function deleteUser(id, username) {
         input.type = 'hidden';
         input.name = 'user_id';
         input.value = id;
+
+        // CSRF Token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = "{{ csrf_token() }}";
         
         const csrfInput = document.createElement('input');
         csrfInput.type = 'hidden';
