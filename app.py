@@ -18,6 +18,7 @@ from io import BytesIO
 import base64
 from dotenv import load_dotenv
 import mailtrap as mt
+from flask_wtf.csrf import CSRFProtect
 
 # Load environment variables
 load_dotenv()
